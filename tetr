@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tetris</title>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400"></canvas>
+<script>
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+var grid = [];
+for (var i = 0; i < 20; i++) {
+  grid[i] = [];
+  for (var j = 0; j < 10; j++) {
+    grid[i][j] = 0;
+  }
+}
+
+var currentPiece = new Piece();
+
+function drawGrid() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (var i = 0; i < 20; i++) {
+    for (var j = 0; j < 10; j++) {
+      if (grid[i][j] != 0) {
+        ctx.fillStyle = grid[i][j].color;
+        ctx.fillRect(j * 20, i * 20, 20, 20);
+      }
+    }
+  }
+}
+
+function drawPiece() {
+  ctx.fillStyle = currentPiece.color;
+  for (var i = 0; i < 4; i++) {
+    for (var j = 0; j < 4; j++) {
+      if (currentPiece.blocks[i][j] != 0) {
+        ctx.fillRect(currentPiece.x + j * 20, currentPiece.y + i * 20, 20, 20);
+      }
+    }
+  }
+}
+
+function update() {
+  // Move the piece down
+  currentPiece.y++;
+
+  // Check for collisions
+  for (var i = 0; i < 4; i++) {
+    for (var j = 0; j < 4; j++) {
+      if (currentPiece.blocks[i][j] != 0 && grid[currentPiece.y + i][currentPiece.x + j] != 0) {
+        // Collision!
+        currentPiece.y--;
+
+        // Check if the row is full
+        for (var k = 0; k < 4; k++) {
+          if (grid[currentPiece.y + k][currentPiece.x] == 0) {
+            break;
+          }
+        }
+
+        if (k == 4) {
+          // The row is full!
+          for (var k = 0; k < 4; k++) {
+            grid[currentPiece.y + k][currentPiece.x] = 0;
+          }
+
+          // Remove the row from the grid
+          for (var k = currentPiece.y; k > 0; k--) {
+            for (var l = 0; l < 10; l++) {
+              grid[k][l] = grid[k - 1][l];
+            }
+          }
+
+          // Increase the score
+          score += 10;
+        }
+
+        // Generate a new piece
+        currentPiece = new Piece();
+      }
+    }
+  }
+
+  // Draw the grid and the piece
+  drawGrid();
+  drawPiece();
+}
+
+window.addEventListener("keydown", function(event) {
+  switch (event.keyCode) {
+    case 38: // Up arrow
+      currentPiece.rotate();
+      break;
+    case 37: // Left arrow
+      currentPiece.moveLeft();
+      break;
+    case 39: // Right arrow
+      currentPiece.moveRight();
+      break;
+    case 40: // Down arrow
+      currentPiece.hardDrop();
+      break;
+  }
+});
+
+setInterval(update, 200);
+</script>
+</body>
+</html>
